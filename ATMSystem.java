@@ -2,10 +2,11 @@ import java.util.Scanner;
 
 class BankAccount {
     private double balance;
-    private final int PIN = 1234;
+    private int PIN;
 
-    BankAccount(int initialBalance){
+    BankAccount(int initialBalance , int inputPin){
         balance = initialBalance;
+        PIN = inputPin;
     }
 
     public double checkBalance(){
@@ -43,6 +44,12 @@ class BankAccount {
     }
 
 
+    public void changePin(int inputPIN){
+        PIN = inputPIN;
+        System.out.println("PIN changed successfully");
+    }
+
+
 }
 
 public class ATMSystem {
@@ -50,7 +57,7 @@ public class ATMSystem {
 
         Scanner sc = new Scanner(System.in);
 
-        BankAccount account = new BankAccount(1000);
+        BankAccount account = new BankAccount(1000 , 1234);
         boolean exit = true;
 
         while(exit){
@@ -58,7 +65,8 @@ public class ATMSystem {
             System.out.println("1. Check Balance");
             System.out.println("2. Withdraw Money");
             System.out.println("3. Deposit Money");
-            System.out.println("4. Exit");
+            System.out.println("4. Change PIN");
+            System.out.println("5. Exit");
             System.out.print("Choose an option: ");
 
             try{
@@ -95,6 +103,36 @@ public class ATMSystem {
                             account.depositMoney(depositAmount);
                             break;
                         case 4:
+
+                            try {
+
+                                int newPIN;
+
+                                    System.out.print("Enter your old PIN : ");
+                                    int inputPIN = sc.nextInt();
+                                    if (!account.verifyPin(inputPIN)) {
+                                        System.out.println("Invalid PIN. Try again");
+                                        continue;
+                                    }
+                                do{
+                                    System.out.print("Enter your new PIN: ");
+                                    newPIN = sc.nextInt();
+
+                                    if (inputPIN == newPIN) {
+                                        System.out.println("New pin cannot be same as old pin. Please enter different pin. ");
+
+                                    }
+                                }while (inputPIN == newPIN);
+                                account.changePin(newPIN);
+                            }
+                            catch (Exception e){
+                                System.out.println("Error : Enter 4-digit PIN");
+                                sc.next();
+                                continue;
+                            }
+
+                            break;
+                        case 5:
                             exit = false;
                             System.out.println("Exiting .... Thankyou for using the ATM.");
                             break;
