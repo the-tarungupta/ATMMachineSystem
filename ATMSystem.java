@@ -1,21 +1,89 @@
 import java.util.*;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 
 class BankAccount{
     private int balance;
     private int PIN;
+    private int failedAttempts;
+    private LocalDateTime blockedUntil;
+
 
     BankAccount(int initialBalance , int PIN){
         balance = initialBalance;
         this.PIN = PIN;
+        this.failedAttempts = 0;
+        this.blockedUntil = null;        // card is not yet blocked
+    }
+
+    public boolean isBlocked(){
+
+
+        if(blockedUntil !=null){
+            LocalDateTime  now = LocalDateTime.now();
+            if( now.isBefore(blockedUntil) ){      // Current date is before the blockedUntil date
+                System.out.println("1. View remaining time for unblocking.");
+                System.out.println("2. Exit");
+                Scanner sc = new Scanner(System.in);
+                while(true) {
+                    System.out.print("Enter your choice : ");
+                    int choice = 0;
+                    try {
+                        choice = sc.nextInt();
+                        if (choice == 1) {
+                            long hoursLeft = ChronoUnit.HOURS.between(now, blockedUntil);
+                            long minLeft = ChronoUnit.MINUTES.between(now, blockedUntil);
+                            System.out.println("Time remaining for card unblocking : " + hoursLeft +  " hours "+minLeft+" minutes.");
+
+                        } else if (choice == 2) {
+                            System.out.println("Exiting...");
+                            break;
+                        } else {
+                            System.out.println("Invalid choice.");
+
+                        }
+                    } catch (Exception e) {
+                        System.out.println("You have to choose either 1 or 2.");
+                        sc.next();
+                    }
+
+                }
+
+                return true;
+            }
+            else{
+                blockedUntil = null;   // card gets unblocked
+                failedAttempts=0;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean verifyPin(int PIN){
+        if(PIN == this.PIN){
+            failedAttempts = 0;
+            return true;
+        }
+        else{
+            failedAttempts++;
+            if(failedAttempts >= 3){
+                blockedUntil = LocalDateTime.now().plusHours(48);
+                System.out.println("Incorrect PIN entered 3 times.");
+            }
+            else {
+                System.out.println("Incorrect PIN. Attempt " + failedAttempts + " of 3.");
+            }
+            return false;
+        }
     }
 
     public int checkBalance(){
         return balance;
     }
 
-    public boolean checkPin(int PIN){
-        return this.PIN == PIN;
-    }
+
 
     public void withdrawMoney(int amount){
         if(amount<=balance){
@@ -60,7 +128,13 @@ class ATMSystem {
         System.out.println("Here are your Main Menu options : ");
         System.out.println();
         boolean exit = true;
+
+
         while(exit){
+            if(account.isBlocked()){
+                System.out.println("Your card is blocked. You cannot use ATM services.");
+                break;
+            }
             System.out.println("1]. Check Balance");
             System.out.println("2]. Withdraw Money");
             System.out.println("3]. Deposit Money");
@@ -74,40 +148,40 @@ class ATMSystem {
                 switch(choice){
                     case 1 : int pin = validPin(sc);
 
-                        if(account.checkPin(pin)){
+                        if(account.verifyPin(pin)){
                             int balance = account.checkBalance();
                             System.out.println("Available Balance : "+balance);
                             System.out.println();
                         }
                         else{
-                            System.out.println("Incorrect PIN. Try again");
+
                             System.out.println();
                         }
                         continue;
                     case 2 : pin = validPin(sc);
-                        if(account.checkPin(pin)){
+                        if(account.verifyPin(pin)){
                             System.out.print("Enter amount to be withdrawan : ");
                             int amount = sc.nextInt();
                             account.withdrawMoney(amount);
                         }
                         else{
-                            System.out.println("Incorrect PIN. Try again");
+
                             System.out.println();
                         }
                         continue;
                     case 3 : pin = validPin(sc);
-                        if(account.checkPin(pin)){
+                        if(account.verifyPin(pin)){
                             System.out.print("Enter amount to be depsoited : ");
                             int amount = sc.nextInt();
                             account.depositMoney(amount);
                         }
                         else{
-                            System.out.println("Incorrect PIN. Try again");
+
                             System.out.println();
                         }
                         continue;
                     case 4 : pin = validPin(sc);
-                        if(account.checkPin(pin)){
+                        if(account.verifyPin(pin)){
                             try{
                                 System.out.print("Enter your new PIN : ");
                                 int newPIN = sc.nextInt();
@@ -124,7 +198,6 @@ class ATMSystem {
                             }
                         }
                         else{
-                            System.out.println("Incorrect PIN. Try again");
                             System.out.println();
                         }
                         continue;
@@ -132,7 +205,7 @@ class ATMSystem {
                         exit = false;
                         break;
                     default : System.out.println("Invalid Choice. Choose 1 to 5 digit ! ");
-                        continue;
+
 
                 }
             }
@@ -152,7 +225,7 @@ class ATMSystem {
                 PIN = sc.nextInt();
                 if(String.valueOf(PIN).length() != 4){
                     System.out.println("Your PIN must be 4-digit. Try again.");
-                    continue;
+
                 }
                 else{
                     break;
