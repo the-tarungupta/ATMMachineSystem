@@ -1,6 +1,7 @@
 import java.util.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.time.format.DateTimeFormatter;
 
 
 class BankAccount{
@@ -8,6 +9,7 @@ class BankAccount{
     private int PIN;
     private int failedAttempts;
     private LocalDateTime blockedUntil;
+    static List<String> transactionHistory = new ArrayList<>();
 
 
     BankAccount(int initialBalance , int PIN){
@@ -90,6 +92,7 @@ class BankAccount{
             balance-=amount;
             System.out.println(amount+" withdrawan successfully");
             System.out.println();
+            ATMSystem.addTransaction("Withdrawal", amount);
         }
         else{
             System.out.println("Insufficient balance in your account");
@@ -103,6 +106,7 @@ class BankAccount{
             balance += amount;
             System.out.println(amount+" deposited successfully");
             System.out.println();
+            ATMSystem.addTransaction("Deposit", amount);
         }
         else{
             System.out.println("Invalid amount entered");
@@ -114,6 +118,7 @@ class BankAccount{
     public void changePin(int PIN){
         this.PIN = PIN;
         System.out.println("Your PIN changed successfully");
+        ATMSystem.addTransaction("PIN Change", 0);
         System.out.println();
     }
 }
@@ -139,7 +144,8 @@ class ATMSystem {
             System.out.println("2]. Withdraw Money");
             System.out.println("3]. Deposit Money");
             System.out.println("4]. Change PIN");
-            System.out.println("5]. Exit");
+            System.out.println("5]. Mini Statement");
+            System.out.println("6]. Exit");
             System.out.println();
 
             System.out.print("Enter your choice : ");
@@ -157,6 +163,7 @@ class ATMSystem {
 
                             System.out.println();
                         }
+                        addTransaction("Balance Check", 0);
                         continue;
                     case 2 : pin = validPin(sc);
                         if(account.verifyPin(pin)){
@@ -168,17 +175,20 @@ class ATMSystem {
 
                             System.out.println();
                         }
+
                         continue;
                     case 3 : pin = validPin(sc);
                         if(account.verifyPin(pin)){
                             System.out.print("Enter amount to be depsoited : ");
                             int amount = sc.nextInt();
                             account.depositMoney(amount);
+
                         }
                         else{
 
                             System.out.println();
                         }
+
                         continue;
                     case 4 : pin = validPin(sc);
                         if(account.verifyPin(pin)){
@@ -201,7 +211,17 @@ class ATMSystem {
                             System.out.println();
                         }
                         continue;
-                    case 5 : System.out.println("Exiting....Thank you for using our ATM Service ");
+                    case 5 : pin = validPin(sc);
+                                 if(account.verifyPin(pin)) {
+                                     showMiniStatement();
+                                     continue;
+                                 }
+                                 else{
+
+                                     continue;
+                                 }
+
+                    case 6 : System.out.println("Exiting....Thank you for using our ATM Service ");
                         exit = false;
                         break;
                     default : System.out.println("Invalid Choice. Choose 1 to 5 digit ! ");
@@ -237,5 +257,41 @@ class ATMSystem {
             }
         }
         return PIN;
+    }
+
+// adding things in mini statement
+    public static void addTransaction(String type , int amount){
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy           HH:mm ");
+        String formattedDate = now.format(formatter);
+
+        if (type.equals("Withdrawal")) {
+            BankAccount.transactionHistory.add(type + " of " + amount + "rs      " + formattedDate);
+        }
+        else if (type.equals("Deposit")){
+            BankAccount.transactionHistory.add(type + " of " + amount + "rs            " + formattedDate);
+        }
+        else {
+            if(type.equals("PIN Change")){
+                BankAccount.transactionHistory.add(type + "                  " + formattedDate);
+            }
+            else {
+                BankAccount.transactionHistory.add(type + "               " + formattedDate);
+            }
+        }
+    }
+
+    // displaying mini statement
+    public static void showMiniStatement() {
+
+        System.out.println("---- Mini Statement ----");
+        if (BankAccount.transactionHistory.isEmpty()) {
+            System.out.println("No transactions to display.");
+        } else {
+            for (String transaction : BankAccount.transactionHistory) {
+                System.out.println(transaction);
+            }
+        }
+        System.out.println("------------------------");
     }
 }
