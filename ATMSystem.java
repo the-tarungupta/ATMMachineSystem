@@ -90,7 +90,7 @@ class BankAccount{
     public void withdrawMoney(int amount){
         if(amount<=balance){
             balance-=amount;
-            System.out.println(amount+" withdrawan successfully");
+            System.out.println(amount+" rs. withdrawan successfully");
             System.out.println();
             ATMSystem.addTransaction("Withdrawal", amount);
         }
@@ -104,7 +104,7 @@ class BankAccount{
     public void depositMoney(int amount){
         if(amount>0){
             balance += amount;
-            System.out.println(amount+" deposited successfully");
+            System.out.println(amount+" rs. deposited successfully");
             System.out.println();
             ATMSystem.addTransaction("Deposit", amount);
         }
@@ -156,7 +156,7 @@ class ATMSystem {
 
                         if(account.verifyPin(pin)){
                             int balance = account.checkBalance();
-                            System.out.println("Available Balance : "+balance);
+                            System.out.println("Available Balance : "+balance+" rs.");
                             System.out.println();
                         }
                         else{
@@ -179,7 +179,7 @@ class ATMSystem {
                         continue;
                     case 3 : pin = validPin(sc);
                         if(account.verifyPin(pin)){
-                            System.out.print("Enter amount to be depsoited : ");
+                            System.out.print("Enter amount to be deposited : ");
                             int amount = sc.nextInt();
                             account.depositMoney(amount);
 
@@ -230,7 +230,7 @@ class ATMSystem {
                 }
             }
             catch(Exception e){
-                System.out.println("Error! You have to enter a digit");
+                System.out.println("Error! You have to enter an Integer");
                 sc.next();
             }
         }
