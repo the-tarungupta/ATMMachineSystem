@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 
 
 class BankAccount{
-    private int balance;
+    protected int balance;
     private int PIN;
     private int failedAttempts;
     private LocalDateTime blockedUntil;
@@ -88,11 +88,14 @@ class BankAccount{
 
 
     public void withdrawMoney(int amount){
-        if(amount<=balance){
+        if(amount<=balance && amount>=500){
             balance-=amount;
             System.out.println(amount+" rs. withdrawan successfully");
             System.out.println();
             ATMSystem.addTransaction("Withdrawal", amount);
+        }
+        else if(amount<500){
+            System.out.println("Minimum Withdrawal amount : 500rs.");
         }
         else{
             System.out.println("Insufficient balance in your account");
@@ -102,11 +105,14 @@ class BankAccount{
 
 
     public void depositMoney(int amount){
-        if(amount>0){
+        if(amount>=500){
             balance += amount;
             System.out.println(amount+" rs. deposited successfully");
             System.out.println();
             ATMSystem.addTransaction("Deposit", amount);
+        }
+        else if(amount<500 && amount>0){
+            System.out.println("Minimum deposit amount : 500rs. ");
         }
         else{
             System.out.println("Invalid amount entered");
@@ -213,7 +219,7 @@ class ATMSystem {
                         continue;
                     case 5 : pin = validPin(sc);
                                  if(account.verifyPin(pin)) {
-                                     showMiniStatement();
+                                     showMiniStatement(account);
                                      continue;
                                  }
                                  else{
@@ -282,15 +288,16 @@ class ATMSystem {
     }
 
     // displaying mini statement
-    public static void showMiniStatement() {
+    public static void showMiniStatement(BankAccount account) {
 
-        System.out.println("---- Mini Statement ----");
+        System.out.println("---- Mini Statement ----\n");
         if (BankAccount.transactionHistory.isEmpty()) {
             System.out.println("No transactions to display.");
         } else {
             for (String transaction : BankAccount.transactionHistory) {
                 System.out.println(transaction);
             }
+            System.out.println("\nCurrent Balance : "+account.balance+" rs.");
         }
         System.out.println("------------------------");
     }
