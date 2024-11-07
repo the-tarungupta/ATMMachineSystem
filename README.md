@@ -4,16 +4,16 @@ This is a console-based ATM Machine System implemented in Java, using core conce
 
 ## Features ##
 
-**Check Balance**: View the current account balance.
-**Withdraw Money**: Withdraw a specified amount from the account.
-**Limit**: Daily transaction limit of 5 and a maximum withdrawal limit of ₹70,000 per transaction.
-**Deposit** Money: Deposit a specified amount into the account.
-**Change PIN**: Change the account PIN securely by verifying the old PIN.
+* **Check Balance**: View the current account balance.
+* **Withdraw Money**: Withdraw a specified amount from the account.
+* **Limit**: Daily transaction limit of 5 and a maximum withdrawal limit of ₹70,000 per transaction.
+* **Deposit** Money: Deposit a specified amount into the account.
+* **Change PIN**: Change the account PIN securely by verifying the old PIN.
               *Allows PIN updates while enforcing a 4-digit requirement.
               *Ensures the new PIN is different from the current one.
-**Mini Statement**: Shows an invoice of recent transactions (withdrawals, deposits, PIN changes) with the current date and time.
-**Daily Transaction Limit**: Limits users to 5 transactions per day.
-**PIN Retry Limit**: If the PIN is entered incorrectly 3 times, the card is blocked for 48 hours.
+* **Mini Statement**: Shows an invoice of recent transactions (withdrawals, deposits, PIN changes) with the current date and time.
+* **Daily Transaction Limit**: Limits users to 5 transactions per day.
+* **PIN Retry Limit**: If the PIN is entered incorrectly 3 times, the card is blocked for 48 hours.
 
 
 ## Technologies Used ##
