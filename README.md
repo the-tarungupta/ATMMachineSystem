@@ -8,7 +8,7 @@ This is a console-based ATM Machine System implemented in Java, using core conce
 * **Withdraw Money**: Withdraw a specified amount from the account.
 * **Limit**: Daily transaction limit of 5 and a maximum withdrawal limit of ₹70,000 per transaction.
 * **Deposit** Money: Deposit a specified amount into the account.
-* **Change PIN**: Change the account PIN securely by verifying the old PIN.
+* **Change PIN**: Change the account PIN securely by verifying the old PIN. <br/>
               *Allows PIN updates while enforcing a 4-digit requirement.
               *Ensures the new PIN is different from the current one.
 * **Mini Statement**: Shows an invoice of recent transactions (withdrawals, deposits, PIN changes) with the current date and time.
