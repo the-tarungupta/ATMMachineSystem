@@ -14,7 +14,7 @@ class BankAccount{
     static final int MAX_DAILY_TRANSACTIONS = 5;   // max time user can use atm services
     private static final int MAX_WITHDRAWAL_AMOUNT = 70000;     // max withdrawal user can make at once
 
-// Initializing a/c balance and pin
+    // Initializing a/c balance and pin
     BankAccount(int initialBalance , int PIN){
         balance = initialBalance;
         this.PIN = PIN;
@@ -161,7 +161,12 @@ class BankAccount{
 }
 
 class ATMSystem {
+    private static int[] ratings = new int[100]; // Array to store ratings (limit to 100 users for simplicity)
+    private static int ratingIndex = 0;
+
+
     public static void main(String[] args) {
+
 
         BankAccount account = new BankAccount(2000 , 9956);
         Scanner sc = new Scanner(System.in);
@@ -267,6 +272,7 @@ class ATMSystem {
 
 
                     case 6 : System.out.println("Exiting....Thank you for using our ATM Service ");
+                        getFeedback(sc);
                         exit = false;
                         break;
                     default : System.out.println("Invalid Choice. Choose 1 to 5 digit ! ");
@@ -280,6 +286,27 @@ class ATMSystem {
             }
         }
 
+    }
+
+    private static void getFeedback(Scanner sc) {
+        int rating = 0;
+        boolean validRating = false;
+
+        while (!validRating) {
+            System.out.print("\nPlease rate your ATM experience (1 to 5): ");
+            rating = sc.nextInt();
+
+            if (rating >= 1 && rating <= 5) {
+                validRating = true;
+                ATMSystem.ratings[ATMSystem.ratingIndex] = rating;
+                ATMSystem.ratingIndex++;
+                System.out.println("Thank you for your feedback!");
+            } else {
+                System.out.println("\n`Invalid rating. Please enter a number between 1 and 5.");
+            }
+        }
+
+        System.out.println("You rated the service: " + rating + " stars.");
     }
 
     public static int validPin(Scanner sc){
