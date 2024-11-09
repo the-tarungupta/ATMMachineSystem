@@ -14,24 +14,22 @@ class BankAccount{
     static final int MAX_DAILY_TRANSACTIONS = 5;   // max time user can use atm services
     private static final int MAX_WITHDRAWAL_AMOUNT = 70000;     // max withdrawal user can make at once
 
-
+// Initializing a/c balance and pin
     BankAccount(int initialBalance , int PIN){
         balance = initialBalance;
         this.PIN = PIN;
-        this.failedAttempts = 0;
-        this.blockedUntil = null;        
+        this.failedAttempts = 0;    // no. of times incorrect pin
+        this.blockedUntil = null;   // currently card is not blocked
     }
 
     public boolean isBlocked(){
-
-
         if(blockedUntil !=null){
             LocalDateTime  now = LocalDateTime.now();
-            if( now.isBefore(blockedUntil) ){      
-                System.out.println("1. View remaining time for unblocking.");
-                System.out.println("2. Exit");
+            if( now.isBefore(blockedUntil) ){
                 Scanner sc = new Scanner(System.in);
                 while(true) {
+                    System.out.println("1. View remaining time for unblocking.");
+                    System.out.println("2. Exit");
                     System.out.print("Enter your choice : ");
                     int choice = 0;
                     try {
@@ -39,7 +37,7 @@ class BankAccount{
                         if (choice == 1) {
                             long hoursLeft = ChronoUnit.HOURS.between(now, blockedUntil);
                             long minLeft = ChronoUnit.MINUTES.between(now, blockedUntil);
-                            System.out.println("Time remaining for card unblocking : " + hoursLeft +  " hours "+minLeft+" minutes.");
+                            System.out.println("Time remaining for card unblocking : " + hoursLeft +  " hours "+minLeft+" minutes.\n");
 
                         } else if (choice == 2) {
                             System.out.println("Exiting...");
@@ -58,7 +56,7 @@ class BankAccount{
                 return true;
             }
             else{
-                blockedUntil = null;   
+                blockedUntil = null;
                 failedAttempts=0;
             }
         }
@@ -96,10 +94,11 @@ class BankAccount{
                 System.out.println("You have reached your daily transaction limit of 70000rs. ");
             }
             else{
-            balance-=amount;
-            System.out.println(amount+" rs. withdrawan successfully");
-            System.out.println();
-            ATMSystem.addTransaction("Withdrawal", amount);
+                balance-=amount;
+                System.out.println(amount+" rs. withdrawan successfully");
+                System.out.println();
+                ATMSystem.addTransaction("Withdrawal", amount);
+                offerReceipt("Withdrawal", amount);
             }
         }
         else if(amount<500){
@@ -118,6 +117,7 @@ class BankAccount{
             System.out.println(amount+" rs. deposited successfully");
             System.out.println();
             ATMSystem.addTransaction("Deposit", amount);
+            offerReceipt("Deposit", amount);
         }
         else if(amount<500 && amount>0){
             System.out.println("Minimum deposit amount : 500rs. ");
@@ -126,6 +126,29 @@ class BankAccount{
             System.out.println("Invalid amount entered");
             System.out.println();
         }
+    }
+
+    private void offerReceipt(String transactionType, double amount) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Would you like a receipt for this transaction ? (yes/no): ");
+        String response = scanner.next().toLowerCase();
+        if (response.equals("yes")) {
+            printReceipt(transactionType, amount);
+        } else {
+            System.out.println("Returning to main menu...");
+        }
+    }
+
+    private void printReceipt(String transactionType, double amount) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+        System.out.println("\n--- Virtual Receipt ---");
+        System.out.println("Transaction Type: " + transactionType);
+        System.out.println("Transaction Amount: " + amount+"rs.");
+        System.out.println("Account Balance: " + balance+"rs.");
+        System.out.println("Date & Time: " + now.format(formatter));
+        System.out.println("-----------------------\n");
     }
 
 
@@ -166,8 +189,8 @@ class ATMSystem {
             try{
                 int choice = sc.nextInt();
                 if (BankAccount.transactionCount >= BankAccount.MAX_DAILY_TRANSACTIONS) {
-                System.out.println("You have reached your daily transaction limit.");
-                break;
+                    System.out.println("You have reached your daily transaction limit.");
+                    break;
                 }
                 switch(choice){
                     case 1 : int pin = validPin(sc);
@@ -232,16 +255,16 @@ class ATMSystem {
                         BankAccount.transactionCount++;
                         continue;
                     case 5 : pin = validPin(sc);
-                                 if(account.verifyPin(pin)) {
-                                     showMiniStatement(account);
-                                     BankAccount.transactionCount++;
-                                     continue;
-                                 }
-                                 else{
-                                     BankAccount.transactionCount++;
-                                     continue;
-                                 }
-                                
+                        if(account.verifyPin(pin)) {
+                            showMiniStatement(account);
+                            BankAccount.transactionCount++;
+                            continue;
+                        }
+                        else{
+                            BankAccount.transactionCount++;
+                            continue;
+                        }
+
 
                     case 6 : System.out.println("Exiting....Thank you for using our ATM Service ");
                         exit = false;
