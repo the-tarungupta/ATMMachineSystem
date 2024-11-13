@@ -2,6 +2,8 @@ import java.util.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
+import java.time.Duration;
+
 
 
 // Holding the account details of user
@@ -205,6 +207,8 @@ class ATMSystem {
         Scanner sc = new Scanner(System.in);
         boolean exit = true;
 
+        LocalDateTime startTime = LocalDateTime.now();
+        displayCurrentDateTime();
 
         while (exit) {
             if (account.isBlocked()) {
@@ -260,6 +264,13 @@ class ATMSystem {
                 sc.next();
             }
         }
+
+        LocalDateTime endTime = LocalDateTime.now();
+        long minutesSpent = Duration.between(startTime, endTime).toMinutes();
+
+
+        System.out.println("\nTime spent on ATM system: " + minutesSpent + " minutes.");
+        displayCurrentDateTime();
     }
 
 
@@ -284,5 +295,11 @@ class ATMSystem {
             }
         }
         return PIN;
+    }
+
+    private static void displayCurrentDateTime() {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, dd MMMM yyyy, hh:mm a");
+        System.out.println("\n------- " + now.format(formatter) + " -------");
     }
 }
