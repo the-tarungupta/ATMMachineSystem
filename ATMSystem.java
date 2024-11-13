@@ -3,134 +3,108 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 
-// Holding the account details of user
-class BankAccount{
-    protected int balance;          // balance in account
-    private int PIN;                // atm pin
-    private int failedAttempts;     // no. of wrong pin attempts
-    private LocalDateTime blockedUntil;         // time till card gets blocked
-    static List<String> transactionHistory = new ArrayList<>();      // holds transaction history
-    public static int transactionCount = 0;      // no. of times user uses atm services
-    static final int MAX_DAILY_TRANSACTIONS = 5;   // max time user can use atm services
-    private static final int MAX_WITHDRAWAL_AMOUNT = 70000;     // max withdrawal user can make at once
 
-    // Initializing a/c balance and pin
-    BankAccount(int initialBalance , int PIN){
-        balance = initialBalance;
+// Holding the account details of user
+class BankAccount {
+    private int balance;       // a/c balance
+    private int PIN;           // atm pin for a/c
+    private int failedAttempts; // no. of incorrect pins attempts
+    private LocalDateTime blockedUntil;  // till when card get block
+    private List<Transaction> transactionHistory = new ArrayList<>();  // contains list of transactions
+    private static final int MAX_DAILY_TRANSACTIONS = 5;  // max daily transaction
+    private static final int MAX_WITHDRAWAL_AMOUNT = 70000;  // max withdrawal amount
+    private int transactionCount = 0;   // no. of transaction processed
+
+
+    BankAccount(int initialBalance, int PIN) {
+        this.balance = initialBalance;
         this.PIN = PIN;
-        this.failedAttempts = 0;    // no. of times incorrect pin
-        this.blockedUntil = null;   // currently card is not blocked
+        this.failedAttempts = 0;
+        this.blockedUntil = null;
     }
 
-    public boolean isBlocked(){
-        if(blockedUntil !=null){
-            LocalDateTime  now = LocalDateTime.now();
-            if( now.isBefore(blockedUntil) ){
-                Scanner sc = new Scanner(System.in);
-                while(true) {
-                    System.out.println("1. View remaining time for unblocking.");
-                    System.out.println("2. Exit");
-                    System.out.print("Enter your choice : ");
-                    int choice = 0;
-                    try {
-                        choice = sc.nextInt();
-                        if (choice == 1) {
-                            long hoursLeft = ChronoUnit.HOURS.between(now, blockedUntil);
-                            long minLeft = ChronoUnit.MINUTES.between(now, blockedUntil);
-                            System.out.println("Time remaining for card unblocking : " + hoursLeft +  " hours "+minLeft+" minutes.\n");
 
-                        } else if (choice == 2) {
-                            System.out.println("Exiting...");
-                            break;
-                        } else {
-                            System.out.println("Invalid choice.");
-
-                        }
-                    } catch (Exception e) {
-                        System.out.println("You have to choose either 1 or 2.");
-                        sc.next();
-                    }
-
-                }
-
+    public boolean isBlocked() {
+        if (blockedUntil != null) {
+            LocalDateTime now = LocalDateTime.now();
+            if (now.isBefore(blockedUntil)) {
+                System.out.println("Your card is blocked. Remaining time for unblocking: " +
+                        ChronoUnit.HOURS.between(now, blockedUntil) + " hours " +
+                        ChronoUnit.MINUTES.between(now, blockedUntil) % 60 + " minutes.\n");
                 return true;
-            }
-            else{
+            } else {
                 blockedUntil = null;
-                failedAttempts=0;
+                failedAttempts = 0;
             }
         }
-
         return false;
     }
 
-    public boolean verifyPin(int PIN){
-        if(PIN == this.PIN){
+
+    public boolean verifyPin(int PIN) {
+        if (PIN == this.PIN) {
             failedAttempts = 0;
             return true;
-        }
-        else{
+        } else {
             failedAttempts++;
-            if(failedAttempts >= 3){
+            if (failedAttempts >= 3) {
                 blockedUntil = LocalDateTime.now().plusHours(48);
-                System.out.println("Incorrect PIN entered 3 times.");
-            }
-            else {
+                System.out.println("Incorrect PIN entered 3 times. Card is blocked for 48 hours.");
+            } else {
                 System.out.println("Incorrect PIN. Attempt " + failedAttempts + " of 3.");
             }
             return false;
         }
     }
 
-    public int checkBalance(){
+
+    public int checkBalance() {
         return balance;
     }
 
 
-
-    public void withdrawMoney(int amount){
-        if(amount<=balance && amount>=500){
-            if (amount > MAX_WITHDRAWAL_AMOUNT) {
-                System.out.println("You have reached your daily transaction limit of 70000rs. ");
-            }
-            else{
-                balance-=amount;
-                System.out.println(amount+" rs. withdrawan successfully");
-                System.out.println();
-                ATMSystem.addTransaction("Withdrawal", amount);
-                offerReceipt("Withdrawal", amount);
-            }
-        }
-        else if(amount<500){
-            System.out.println("Minimum Withdrawal amount : 500rs.");
-        }
-        else{
-            System.out.println("Insufficient balance in your account");
-            System.out.println();
+    public void withdrawMoney(int amount) {
+        if (amount <= balance && amount >= 500 && amount <= MAX_WITHDRAWAL_AMOUNT) {
+            balance -= amount;
+            System.out.println(amount + " rs. withdrawn successfully");
+            addTransaction("Withdrawal", amount);
+            offerReceipt("Withdrawal", amount);
+        } else if (amount < 500) {
+            System.out.println("Minimum withdrawal amount: 500 rs.");
+        } else {
+            System.out.println("Invalid amount or insufficient balance.");
         }
     }
 
 
-    public void depositMoney(int amount){
-        if(amount>=500){
+    public void depositMoney(int amount) {
+        if (amount >= 500) {
             balance += amount;
-            System.out.println(amount+" rs. deposited successfully");
-            System.out.println();
-            ATMSystem.addTransaction("Deposit", amount);
+            System.out.println(amount + " rs. deposited successfully");
+            addTransaction("Deposit", amount);
             offerReceipt("Deposit", amount);
-        }
-        else if(amount<500 && amount>0){
-            System.out.println("Minimum deposit amount : 500rs. ");
-        }
-        else{
-            System.out.println("Invalid amount entered");
-            System.out.println();
+        } else {
+            System.out.println("Minimum deposit amount: 500 rs.");
         }
     }
+
+
+    public void changePin(int PIN) {
+        this.PIN = PIN;
+        System.out.println("Your PIN changed successfully.");
+        addTransaction("PIN Change", 0);
+    }
+
+
+    private void addTransaction(String type, int amount) {
+        transactionHistory.add(new Transaction(type, amount));
+        transactionCount++;
+    }
+
 
     private void offerReceipt(String transactionType, double amount) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Would you like a receipt for this transaction ? (yes/no): ");
+        System.out.print("Would you like a receipt for this transaction? (yes/no): ");
         String response = scanner.next().toLowerCase();
         if (response.equals("yes")) {
             printReceipt(transactionType, amount);
@@ -139,145 +113,146 @@ class BankAccount{
         }
     }
 
+
     private void printReceipt(String transactionType, double amount) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
         System.out.println("\n--- Virtual Receipt ---");
         System.out.println("Transaction Type: " + transactionType);
-        System.out.println("Transaction Amount: " + amount+"rs.");
-        System.out.println("Account Balance: " + balance+"rs.");
+        System.out.println("Transaction Amount: " + amount + " rs.");
+        System.out.println("Account Balance: " + balance + " rs.");
         System.out.println("Date & Time: " + now.format(formatter));
         System.out.println("-----------------------\n");
     }
 
 
-    public void changePin(int PIN){
-        this.PIN = PIN;
-        System.out.println("Your PIN changed successfully");
-        ATMSystem.addTransaction("PIN Change", 0);
-        System.out.println();
+    public void showMiniStatement() {
+        System.out.println("---- Mini Statement ----");
+        if (transactionHistory.isEmpty()) {
+            System.out.println("No transactions to display.");
+        } else {
+            transactionHistory.forEach(Transaction::displayTransaction);
+        }
+        System.out.println("Current Balance: " + balance + " rs.");
+        System.out.println("------------------------");
     }
 }
 
+
+// Holds details for transaction processing
+class Transaction {
+    private String type;  // type of transaction
+    private int amount;   // amount processed
+    private LocalDateTime date;   // date time when transaction processed
+
+
+    Transaction(String type, int amount) {
+        this.type = type;
+        this.amount = amount;
+        this.date = LocalDateTime.now();
+    }
+
+
+    public void displayTransaction() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy HH:mm");
+        if(type.equals("Withdrawal") || type.equals("Deposit")){
+            System.out.println(type + " of " + amount + " rs on " + date.format(formatter));
+        }
+        else{
+            if(type.equals("PIN Change")){
+                System.out.println("\n"+type + "  " + date.format(formatter));
+            }
+        }
+    }
+}
+
+
+class Feedback {
+    private static int[] ratings = new int[100];   // array holding ratings
+    private static int ratingIndex = 0;            // 0-indexing of above ratings array
+
+
+    // Asking for Feedback from User
+    public static void getFeedback(Scanner sc) {
+        int rating=0;
+        while (true) {
+            System.out.print("Please rate your ATM experience (1 to 5): ");
+            try{
+                rating = sc.nextInt();
+            }
+            catch(Exception e){
+                System.out.println("Please enter a number between 1 and 5.");
+                sc.next();
+                continue;
+            }
+            if (rating >= 1 && rating <= 5) {
+                ratings[ratingIndex++] = rating;
+                System.out.println("Thank you for your feedback!");
+                break;
+            } else {
+                System.out.println("Invalid rating. Please enter a number between 1 and 5.");
+            }
+        }
+        System.out.println("You rated the service: " + rating + " stars.");
+    }
+}
+
+
 class ATMSystem {
-    private static int[] ratings = new int[100]; // Array to store ratings (limit to 100 users for simplicity)
-    private static int ratingIndex = 0;
-
-
     public static void main(String[] args) {
 
-
-        BankAccount account = new BankAccount(2000 , 9956);
+        BankAccount account = new BankAccount(2000, 9956); // Creating account of user
         Scanner sc = new Scanner(System.in);
-
-        System.out.println("--------------------------ATM Machine System---------------------------");
-        System.out.println("Here are your Main Menu options : ");
-        System.out.println();
         boolean exit = true;
 
 
-        while(exit){
-            if(account.isBlocked()){
+        while (exit) {
+            if (account.isBlocked()) {
                 System.out.println("Your card is blocked. You cannot use ATM services.");
                 break;
             }
-            System.out.println("1]. Check Balance");
-            System.out.println("2]. Withdraw Money");
-            System.out.println("3]. Deposit Money");
-            System.out.println("4]. Change PIN");
-            System.out.println("5]. Mini Statement");
-            System.out.println("6]. Exit");
-            System.out.println();
 
-            System.out.print("Enter your choice : ");
+            // Main Menu content
+            System.out.println("\n1. Check Balance\n2. Withdraw Money\n3. Deposit Money\n4. Change PIN\n5. Mini Statement\n6. Exit");
+            System.out.print("Enter your choice: ");
             try{
                 int choice = sc.nextInt();
-                if (BankAccount.transactionCount >= BankAccount.MAX_DAILY_TRANSACTIONS) {
-                    System.out.println("You have reached your daily transaction limit.");
-                    break;
-                }
-                switch(choice){
-                    case 1 : int pin = validPin(sc);
 
-                        if(account.verifyPin(pin)){
-                            int balance = account.checkBalance();
-                            System.out.println("Available Balance : "+balance+" rs.");
-                            System.out.println();
+                switch (choice) {
+                    case 1:
+                        if (account.verifyPin(validPin(sc))) {
+                            System.out.println("Available Balance: " + account.checkBalance() + " rs.");
                         }
-                        else{
-
-                            System.out.println();
+                        break;
+                    case 2:
+                        if (account.verifyPin(validPin(sc))) {
+                            System.out.print("Enter amount to withdraw: ");
+                            account.withdrawMoney(sc.nextInt());
                         }
-                        addTransaction("Balance Check", 0);
-                        BankAccount.transactionCount++;
-                        continue;
-                    case 2 : pin = validPin(sc);
-                        if(account.verifyPin(pin)){
-                            System.out.print("Enter amount to be withdrawan : ");
-                            int amount = sc.nextInt();
-                            account.withdrawMoney(amount);
+                        break;
+                    case 3:
+                        if (account.verifyPin(validPin(sc))) {
+                            System.out.print("Enter amount to deposit: ");
+                            account.depositMoney(sc.nextInt());
                         }
-                        else{
-
-                            System.out.println();
+                        break;
+                    case 4:
+                        if (account.verifyPin(validPin(sc))) {
+                            System.out.print("Enter your new PIN: ");
+                            account.changePin(sc.nextInt());
                         }
-                        BankAccount.transactionCount++;
-                        continue;
-                    case 3 : pin = validPin(sc);
-                        if(account.verifyPin(pin)){
-                            System.out.print("Enter amount to be deposited : ");
-                            int amount = sc.nextInt();
-                            account.depositMoney(amount);
-
+                        break;
+                    case 5:
+                        if (account.verifyPin(validPin(sc))) {
+                            account.showMiniStatement();
                         }
-                        else{
-
-                            System.out.println();
-                        }
-                        BankAccount.transactionCount++;
-                        continue;
-                    case 4 : pin = validPin(sc);
-                        if(account.verifyPin(pin)){
-                            try{
-                                System.out.print("Enter your new PIN : ");
-                                int newPIN = sc.nextInt();
-                                if(String.valueOf(newPIN).length() !=4){
-                                    System.out.println("Your new PIN must be 4-digit. Try again.");
-                                }
-                                else{
-                                    account.changePin(newPIN);
-                                }
-                            }
-                            catch(Exception e){
-                                System.out.println("Error! Your PIN must be in digits.");
-                                sc.next();
-                            }
-                        }
-                        else{
-                            System.out.println();
-                        }
-                        BankAccount.transactionCount++;
-                        continue;
-                    case 5 : pin = validPin(sc);
-                        if(account.verifyPin(pin)) {
-                            showMiniStatement(account);
-                            BankAccount.transactionCount++;
-                            continue;
-                        }
-                        else{
-                            BankAccount.transactionCount++;
-                            continue;
-                        }
-
-
-                    case 6 : System.out.println("Exiting....Thank you for using our ATM Service ");
-                        getFeedback(sc);
+                        break;
+                    case 6:
+                        Feedback.getFeedback(sc);
                         exit = false;
                         break;
-                    default : System.out.println("Invalid Choice. Choose 1 to 5 digit ! ");
-
-
+                    default:
+                        System.out.println("Invalid Choice. Choose a number from 1 to 6.");
                 }
             }
             catch(Exception e){
@@ -285,31 +260,11 @@ class ATMSystem {
                 sc.next();
             }
         }
-
     }
 
-    private static void getFeedback(Scanner sc) {
-        int rating = 0;
-        boolean validRating = false;
 
-        while (!validRating) {
-            System.out.print("\nPlease rate your ATM experience (1 to 5): ");
-            rating = sc.nextInt();
-
-            if (rating >= 1 && rating <= 5) {
-                validRating = true;
-                ATMSystem.ratings[ATMSystem.ratingIndex] = rating;
-                ATMSystem.ratingIndex++;
-                System.out.println("Thank you for your feedback!");
-            } else {
-                System.out.println("\n`Invalid rating. Please enter a number between 1 and 5.");
-            }
-        }
-
-        System.out.println("You rated the service: " + rating + " stars.");
-    }
-
-    public static int validPin(Scanner sc){
+    // Method for determining Pin getting valid or invalid
+    private static int validPin(Scanner sc){
         int PIN;
         while(true){
             try{
@@ -329,42 +284,5 @@ class ATMSystem {
             }
         }
         return PIN;
-    }
-
-
-    public static void addTransaction(String type , int amount){
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy           HH:mm ");
-        String formattedDate = now.format(formatter);
-
-        if (type.equals("Withdrawal")) {
-            BankAccount.transactionHistory.add(type + " of " + amount + "rs      " + formattedDate);
-        }
-        else if (type.equals("Deposit")){
-            BankAccount.transactionHistory.add(type + " of " + amount + "rs            " + formattedDate);
-        }
-        else {
-            if(type.equals("PIN Change")){
-                BankAccount.transactionHistory.add(type + "                  " + formattedDate);
-            }
-            else {
-                BankAccount.transactionHistory.add(type + "               " + formattedDate);
-            }
-        }
-    }
-
-
-    public static void showMiniStatement(BankAccount account) {
-
-        System.out.println("---- Mini Statement ----\n");
-        if (BankAccount.transactionHistory.isEmpty()) {
-            System.out.println("No transactions to display.");
-        } else {
-            for (String transaction : BankAccount.transactionHistory) {
-                System.out.println(transaction);
-            }
-            System.out.println("\nCurrent Balance : "+account.balance+" rs.");
-        }
-        System.out.println("------------------------");
     }
 }
