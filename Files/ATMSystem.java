@@ -68,12 +68,17 @@ class ATMSystem {
                 sc.next();
             }
         }
-        
+
         LocalDateTime endTime = LocalDateTime.now();
         long minutesSpent = Duration.between(startTime, endTime).toMinutes();
+        long secondsSpent = Duration.between(startTime, endTime).toSeconds();
 
-        
-        System.out.println("\nTime spent on ATM system: " + minutesSpent + " minutes.");
+        if(minutesSpent!=0) {
+            System.out.println("\nTime spent on ATM system: " + minutesSpent + " minute(s) ");
+        }
+        else{
+            System.out.println("\nTime spent on ATM system: " + minutesSpent + " minute(s) "+ secondsSpent+ " second(s)");
+        }
         displayCurrentDateTime();
     }
 
